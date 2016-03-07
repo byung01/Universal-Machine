@@ -1,0 +1,148 @@
+Project 5: A Universal Virtual Machine Design
+---------------------------------------------
+Name: Flora Liu (fliu01), Bill Yung (byung01)
+Date: November 14, 2015
+
+============
+Architecture
+============
+
+                                ummain.c
+                                   |
+                                   |
+                                  / \
+                                 /   \
+                                /     \
+                               /       \
+                          umload.h   umexec.h
+                               \       /
+                                \     /
+                                 \   /
+                                  \ /
+                                   |          
+                                   |          
+                                 seg.h
+                                   |
+                                   |
+                                bitpack.h
+
+        Our architecture comprises of four layers of different modules that
+        interact with each other in order to emulate a UM. Our Segments module
+        will be used to represent main memory in a UM. The UMload module loads
+        the program into the segments and UMexec executes the instructions that
+        have been loaded. UMmain connects these two modules to run the program
+        entirely.
+
+==========================
+Data Representations of UM
+==========================
+
+Registers:
+        They will be represented using an array of unsigned integers. The length
+        of the array is eight: one for each register.
+
+Segmented Memory:
+        This will be represented using a sequence of sequences. Refer to
+        interface section for details.
+
+Universal Machine Word:
+        Each word is a 32-bit word instruction. The first four bits is the
+        opcode for a certain instruction. The last nine bits indicates three
+        separate registers.
+
+==========
+Interfaces
+==========
+
+umload.h:
+        Loads the program by reading in 32-bit words and storing the
+        instructions in segmented memory.
+
+        Functions:
+        Segs_T um_load_prog(FILE *fp)
+
+umexec.h:
+        Takes in a segmented memory with a loaded program. It performs
+        the set of instructions in segment 0 until reaching a halt instruction.
+
+        Functions:
+        void um_exec_prog(Segs_T segs, unsigned *regs)
+
+seg.h:
+        Holds the representation of how our segments of memory are stored.
+        Provides an extra abstraction of how we are actually manipulating and
+        handling the contents stored within our segments.
+
+==============
+Implementation
+==============
+
+ummain.c:
+        Client for our other interfaces. It uses the umload and umexec
+        interfaces together to emulate the functions of a UM.
+
+umload.c:
+        Functions:
+        void       open_file(FILE *fp)
+        Segs_T     read_file(FILE *fp) --> Where our segmented memory is created
+        void       close_file(FILE *fp)
+
+umexec.c:
+        For each instruction, the register information and opcode will be
+        unpacked using the bitpack.h interface and the register indexes will
+        be stored in a struct.
+
+        Functions:
+        cond_move  (Segs_T segs, unsigned *regs, struct reg_idx)
+        addition   (Segs_T segs, unsigned *regs, struct reg_idx)
+        multiply   (Segs_T segs, unsigned *regs, struct reg_idx)
+        division   (Segs_T segs, unsigned *regs, struct reg_idx)
+        bit_nand   (Segs_T segs, unsigned *regs, struct reg_idx)
+        halt       ()
+        output     (unsigned *regs, struct red_idx)
+        input      (Segs_T segs, unsigned *regs, struct reg_idx)
+        load_prog  (Segs_T segs, unsigned *regs, struct reg_idx)
+        load_val   (Segs_T segs, unsigned *regs, struct reg_idx)
+
+seg.c:
+        This abstract data type represents segmented memory using Hanson's
+        sequence. We are storing everything using a sequence of sequences.
+        The first sequence holds pointers to other sequences, representing
+        the main memory. The pointers point to other sequences that carry can
+        carry multiple 32-bit words. These sequences represent the segemented
+        memory that is used by the UM. To keep track of segments that are
+        mapped and unmapped, we will be storing the status of each segment
+        in a corresponding uarray.
+
+==============        
+Main Algorithm
+==============
+
+        1) Loads instructions (umload.h)
+                -Reads in 32-bit words
+                -Stores all words in segment 0
+        2) Executes instructions (umexec.h)
+                -Executes instructions in segment 0 till HALT is reached
+                -Perform instructions and accesses/ manipulates things in
+                 "main memory" (seg.h)
+
+=======
+Testing
+=======
+
+        To test our segment interface, we will perform some of the following
+        tests:
+                -Map onto segmented memory
+                -Unmap from segmented memory
+                -Store in unmapped memory, should fail
+                -Load from unmapped memory, should fail
+                -Mapping something, unmap that segment, then map again to
+                 see if we are able to reuse the same location
+                -Store something then immediately loading it to check
+                 if value is stored properly
+
+        We plan to test each UM instruction individually using unit tests. We
+        will create segments of data and call certain instructions on the data
+        then check to make sure the functions responsible for the UM
+        instructions are producing the desired outcome. In addition, we will use
+        the halt function so it is easier to test through our program.

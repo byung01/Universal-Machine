@@ -1,0 +1,90 @@
+COMP 40 Homework #6 README
+--------------------------
+Created: Flora Liu (fliu01) and Bill Yung (byung01)
+Date:    November 23, 2015
+
+We have received help from various TAs.
+
+=====
+Usage
+=====
+
+./um [filename.um]
+
+============
+Architecture
+============
+
+                                ummain.c
+                                   |
+                                   |
+                                  / \
+                                 /   \
+                                /     \
+                               /       \
+                          umload.h   umexec.h
+                               \       /
+                                \     /
+                                 \   /
+                                  \ /
+                                   |
+                                   |
+                                 segs.h
+                                   |
+                                   |
+                                bitpack.h
+
+Our architecture comprises of four layers of different modules that interact
+with each other in order to emulate a UM. Our Segments module will be used to
+represent main memory in a UM. The UMload module loads the program into the
+segments and UMexec executes the instructions that have been loaded. UMmain
+connects these two modules to run the program entirely. umload.h hides how
+our UM reads in its instructions from main. umexec.h also hides how our UM
+extracts the opcode and the register numbers to run the instructions given from
+main. segs.h hides how our memory is represented from its clients (everyone).
+
+Changes made since design document submission:
+Instead of representing each segment with sequences, we decided to use UArrays.
+We made this change, becauses sequences can grow in size while the size of
+UArrays are fixed after their initial creation.
+
+===========
+Performance
+===========
+
+Time taken to execute 50 million instructions: ~2 seconds
+(We estimated this value based on how long our UM took to run midmark.um, which
+is around 80 mililon instructions. Our midmark took 2.59 seconds).
+
+=============
+UM Unit Tests
+=============
+
+condmove.um - Tests conditional move by using goto. If the conditional move is
+              true, then the program will jump to the wrong output.
+
+map.um - Tests by mapping and storing a value. We then load and print to see if
+         it is the correct output. We then unmap and map again to see if the
+         address of the map segment is the address of the previously unmapped.
+
+io.um - Test by reading in some input and prints out the input through stdout.
+
+arith.um - Tests our addition, multiplication, and division instructions. We
+           insert values in registers and perform simple arithmetic on certain
+           registers.
+
+nand.um - Tests our bitwise NAND instruction. We first produce 2 32-bit numbers.
+          The first contains all 1's and the second contains 6 0's at the least
+          significant bits. We then nand the two values to see if it produces
+          the correct output.
+
+***If our UM is given a program that does not end in the "Halt" instruction,
+our UM will abort.***
+
+====
+Time
+====
+
+Time spent analyzing assignment: 6-8 hours
+Time spent preparing design: 5 hours
+Time spent solving the problems: 10-12 hours
