@@ -59,6 +59,8 @@ is around 80 mililon instructions. Our midmark took 2.59 seconds).
 =============
 UM Unit Tests
 =============
+.0 files are the testing input
+.1 files are the expected output
 
 condmove.um - Tests conditional move by using goto. If the conditional move is
               true, then the program will jump to the wrong output.
